@@ -7,3 +7,7 @@ CORE_ID = variable qui récupère le numéro du coeur courant
 IRQ_VECTOR[0] pointe vers une fonction qui affiche le numéro du coeur courant et compte jusque 2^20
 
 /home/enseign/ASE/.. core.ini à télécharger
+
+CORE_IRQMAPPER = registre qui redirige les interruptions qui contient 16 registres (1 par coeur)
+Chaque registre indique par une position binaire si l'interruption doit être traité localement par le coeur
+Lancer un timer et sur les coeurs de rangs impair afficher quelquechose lorsqu'ils ont une interruption et sur les autres rien
