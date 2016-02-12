@@ -11,3 +11,7 @@ IRQ_VECTOR[0] pointe vers une fonction qui affiche le numéro du coeur courant e
 CORE_IRQMAPPER = registre qui redirige les interruptions qui contient 16 registres (1 par coeur)
 Chaque registre indique par une position binaire si l'interruption doit être traité localement par le coeur
 Lancer un timer et sur les coeurs de rangs impair afficher quelquechose lorsqu'ils ont une interruption et sur les autres rien
+
+
+
+CORE_LOCK : si 1 le verrou est prit c'est OK. Sinon on boucle dessus jusquà ce qu'on ait eu le verrou
