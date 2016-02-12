@@ -4,6 +4,9 @@
 
 #define CORE_STATUS 0x80
 #define CORE_ID 0x126
+#define CORE_IRQMAPPER 0x82
+#define CORE_NCORE 8
+#define TIMER_IRQ 2
 
 void countByCore(){
     int i;
@@ -13,14 +16,21 @@ void countByCore(){
 }
 
 int main() {
+    int i, firstRegister;
     if(init_hardware("./core/etc/core.ini") == 0) {
         fprintf(stderr, "Error in core initialization\n");
 	exit(EXIT_FAILURE);
     }
 
-    IRQVECTOR[0] = countByCore;
-    
+    /*IRQVECTOR[0] = countByCore;*/
     _out(CORE_STATUS,255);
+
+    firstRegister = _in(CORE_IRQMAPPER);
+    for(i=1;i<CORE_NCORE;i++){
+	if(i%2 != 0)
+	    _out(firstRegister, TIMER_IRQ | _in(firstRegister));
+	firstRegister++;
+    }
 
     while(1){}
 
