@@ -7,14 +7,28 @@
 #define CORE_IRQMAPPER 0x82
 #define CORE_NCORE 8
 #define TIMER_IRQ 2
+#define TIMER_ALARM 0xF8
+#define TIMER_PARAM 0xF4
+#define CORE_LOCK 0x98
+#define CORE_UNLOCK 0x99
 
 void countByCore(){
     int i;
-    printf("The current core is the number : %d\n", _in(CORE_ID));
+    _mask(1);
+    printf("\nThe current core is the number : %d\n", _in(CORE_ID));
     while(1){
+	_in(CORE_LOCK);
+	printf("[%d", _in(CORE_ID));
 	for(i=0;i<(1<<20);i++){}
-	printf("The core %d is finish\n", _in(CORE_ID));
+	printf("-%d]", _in(CORE_ID));
+	_out(CORE_UNLOCK,1);
+	for(i=0;i<(1<<20);i++){}
     }
+}
+
+void handler(){
+    printf("\nhello from core %d\n", _in(CORE_ID));
+    _out(TIMER_ALARM, 0xFFFFFFFE);
 }
 
 int main() {
@@ -24,16 +38,24 @@ int main() {
 	exit(EXIT_FAILURE);
     }
 
+    /*call the functin to count and print the actual core*/
     IRQVECTOR[0] = countByCore;
+
+    /*set the 8th core*/
     _out(CORE_STATUS,255);
 
+    /*active IRQ for all the unpair core*/
     for(i=1;i<=CORE_NCORE;i++){
 	if(i%2 != 0)
-	    _out(CORE_IRQMAPPER + i, 1);
-	printf("%i",_in(CORE_IRQMAPPER+i));
+	    _out(CORE_IRQMAPPER + i, 1 << TIMER_IRQ);
     }
 
-    /*while(1){}*/
+    /*active the IRQ_TIMER*/
+    IRQVECTOR[TIMER_IRQ] = handler;
+    _out(TIMER_PARAM,128+64+32+8); /* reset + alarm on + 8 tick / alarm */
+    _out(TIMER_ALARM,0xFFFFFFFE);  /* alarm at next tick (at 0xFFFFFFFF) */
+
+    while(1){}
 
     return 1;
 }
