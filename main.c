@@ -17,12 +17,13 @@ void countByCore(){
     _mask(1);
     printf("\nThe current core is the number : %d\n", _in(CORE_ID));
     while(1){
-	_in(CORE_LOCK);
-	printf("[%d", _in(CORE_ID));
-	for(i=0;i<(1<<20);i++){}
-	printf("-%d]", _in(CORE_ID));
-	_out(CORE_UNLOCK,1);
-	for(i=0;i<(1<<20);i++){}
+	if(_in(CORE_LOCK) ==1){
+	    printf("[%d", _in(CORE_ID));
+	    for(i=0;i<(1<<20);i++);
+	    printf("-%d]", _in(CORE_ID));
+	    _out(CORE_UNLOCK,0xFFFF);
+	    for(i=0;i<(1<<20);i++);
+	}
     }
 }
 

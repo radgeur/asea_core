@@ -22,3 +22,7 @@ Ajout de listes de contextes que de core
     
 
 [Avant d'activer les cores, le core 0 remplit toutes les listes]
+
+
+Chaque core contient un ring de contextes et une méthode coreboot qui tourne indéfiniment.
+Quand une interruption apparait, yield passe la main à un contexte du ring et quand tous les contextes du ring sont finis, on retourne dans coreboot();
