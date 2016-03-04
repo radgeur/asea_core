@@ -15,3 +15,10 @@ Lancer un timer et sur les coeurs de rangs impair afficher quelquechose lorsqu'i
 
 
 CORE_LOCK : si 1 le verrou est prit c'est OK. Sinon on boucle dessus jusquà ce qu'on ait eu le verrou
+
+
+Ajout de listes de contextes que de core
+    core i <=> liste i
+    
+
+[Avant d'activer les cores, le core 0 remplit toutes les listes]

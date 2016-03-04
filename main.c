@@ -11,28 +11,29 @@
 void countByCore(){
     int i;
     printf("The current core is the number : %d\n", _in(CORE_ID));
-    for(i=0;i<(1<<20);i++){}
-    printf("The core %d is finish\n", _in(CORE_ID));
+    while(1){
+	for(i=0;i<(1<<20);i++){}
+	printf("The core %d is finish\n", _in(CORE_ID));
+    }
 }
 
 int main() {
-    int i, firstRegister;
+    int i;
     if(init_hardware("./core/etc/core.ini") == 0) {
         fprintf(stderr, "Error in core initialization\n");
 	exit(EXIT_FAILURE);
     }
 
-    /*IRQVECTOR[0] = countByCore;*/
+    IRQVECTOR[0] = countByCore;
     _out(CORE_STATUS,255);
 
-    firstRegister = _in(CORE_IRQMAPPER);
-    for(i=1;i<CORE_NCORE;i++){
+    for(i=1;i<=CORE_NCORE;i++){
 	if(i%2 != 0)
-	    _out(firstRegister, TIMER_IRQ | _in(firstRegister));
-	firstRegister++;
+	    _out(CORE_IRQMAPPER + i, 1);
+	printf("%i",_in(CORE_IRQMAPPER+i));
     }
 
-    while(1){}
+    /*while(1){}*/
 
     return 1;
 }
