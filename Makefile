@@ -1,8 +1,8 @@
 ROOTDIR=./core
 
 CC	= gcc
-CFLAGS	= -Wall -ansi -pedantic
-CFLAGS  += -g
+CFLAGS	= -Wall -pedantic
+CFLAGS  += -g -m32
 LIBDIR  = $(ROOTDIR)/lib
 INCDIR  = -I$(ROOTDIR)/include
 LIBS    = -L$(LIBDIR) -lhardware -lpthread
@@ -10,7 +10,7 @@ LIBS    = -L$(LIBDIR) -lhardware -lpthread
 all: main
 
 main : ./hw/hw.o main.o ctx.o sem.o
-	$(CC) $(CFLAGS) -o main main.o $(LIBS)
+	$(CC) $(CFLAGS) -o main main.o ./hw/hw.o ctx.o sem.o $(LIBS)
 
 main.o: main.c ctx.o sem.o hw/hw.o
 	$(CC) $(CFLAGS) -c main.c

@@ -16,44 +16,27 @@
 void producteur(void *arg);
 void consommateur(void *arg);
 
-struct sem_s * mutex;
-struct sem_s * fullSem;
-struct sem_s * emptySem;
-
-
 void producteur(void *args) {
   int i = 1;
-  while (i<=4) {
-    printf("Le produit numéro %i a été confectionné\n", i);
-    sem_down(emptySem);
-    sem_down(mutex);
-    yield();
-    printf("Le produit numéro %i est disponible\n", i);
-    sem_up(mutex);
-    sem_up(fullSem);
-    yield();
+  while (i<1<<18) {
+      printf("Le produit numéro %i a été confectionné par le coeur %i\n", i, _in(CORE_ID));
+    printf("Le produit numéro %i est disponible par le coeur %i\n", i, _in(CORE_ID));
     i++;
   }
 }
 
 void consommateur(void *args) {
   int i = 1;
-  while (i<=4) {
-    sem_down(fullSem);
-    sem_down(mutex);
+  while (i<1<<18) {
     printf("Le produit numéro %i a été pris sur le coeur %i\n", i, _in(CORE_ID));
-    yield();
-    sem_up(mutex);
-    sem_up(emptySem);
     printf("Le produit numéro %i a été utilisé sur le coeur %i\n", i, _in(CORE_ID));
-    yield();
     i++;
   }
 }
 
 void countByCore(){
-  /*int i;
     _mask(1);
+    /*int i;
     printf("\nThe current core is the number : %d\n", _in(CORE_ID));
     while(1){
 	if(_in(CORE_LOCK) ==1){
@@ -69,18 +52,9 @@ void countByCore(){
     create_ctx(16384, producteur, NULL);
     create_ctx(16384, consommateur, NULL);
 
-    /*initialise the semaphore*/
-    mutex = malloc(sizeof(struct sem_s));
-    sem_init(mutex, 1);
-    fullSem = malloc(sizeof(struct sem_s));
-    sem_init(fullSem, 0);
-    emptySem = malloc(sizeof(struct sem_s));
-    sem_init(emptySem, 1);
-
     /*start the schedule*/
     start_sched();
     printf("je suis revenu dans le main\n");
-    exit(EXIT_SUCCESS);
   }
 }
 
@@ -96,15 +70,16 @@ int main() {
 	exit(EXIT_FAILURE);
     }
 
-    /*call the functin to count and print the actual core*/
-    IRQVECTOR[0] = countByCore;
 
+    /*call the function to count and print the actual core*/
+    IRQVECTOR[0] = countByCore;
+    
     /*set the 8th core*/
     _out(CORE_STATUS,255);
-
+    
     /*active IRQ for all the unpair core*/
     for(i=1;i<=CORE_NCORE;i++){
-	if(i%2 != 0)
+	/*if(i%2 != 0)*/
 	    _out(CORE_IRQMAPPER + i, 1 << TIMER_IRQ);
     }
 
