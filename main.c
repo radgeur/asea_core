@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "./core/include/hardware.h"
+#include "sem.h"
 
 #define CORE_STATUS 0x80
 #define CORE_ID 0x126
@@ -12,8 +13,46 @@
 #define CORE_LOCK 0x98
 #define CORE_UNLOCK 0x99
 
+void producteur(void *arg);
+void consommateur(void *arg);
+
+struct sem_s * mutex;
+struct sem_s * fullSem;
+struct sem_s * emptySem;
+
+
+void producteur(void *args) {
+  int i = 1;
+  while (i<=4) {
+    printf("Le produit numéro %i a été confectionné\n", i);
+    sem_down(emptySem);
+    sem_down(mutex);
+    yield();
+    printf("Le produit numéro %i est disponible\n", i);
+    sem_up(mutex);
+    sem_up(fullSem);
+    yield();
+    i++;
+  }
+}
+
+void consommateur(void *args) {
+  int i = 1;
+  while (i<=4) {
+    sem_down(fullSem);
+    sem_down(mutex);
+    printf("Le produit numéro %i a été pris sur le coeur %i\n", i, _in(CORE_ID));
+    yield();
+    sem_up(mutex);
+    sem_up(emptySem);
+    printf("Le produit numéro %i a été utilisé sur le coeur %i\n", i, _in(CORE_ID));
+    yield();
+    i++;
+  }
+}
+
 void countByCore(){
-    int i;
+  /*int i;
     _mask(1);
     printf("\nThe current core is the number : %d\n", _in(CORE_ID));
     while(1){
@@ -24,7 +63,25 @@ void countByCore(){
 	    _out(CORE_UNLOCK,0xFFFF);
 	    for(i=0;i<(1<<20);i++);
 	}
-    }
+	}*/
+  while(1) {
+    /*create the context for all the fonctions*/
+    create_ctx(16384, producteur, NULL);
+    create_ctx(16384, consommateur, NULL);
+
+    /*initialise the semaphore*/
+    mutex = malloc(sizeof(struct sem_s));
+    sem_init(mutex, 1);
+    fullSem = malloc(sizeof(struct sem_s));
+    sem_init(fullSem, 0);
+    emptySem = malloc(sizeof(struct sem_s));
+    sem_init(emptySem, 1);
+
+    /*start the schedule*/
+    start_sched();
+    printf("je suis revenu dans le main\n");
+    exit(EXIT_SUCCESS);
+  }
 }
 
 void handler(){
